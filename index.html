@@ -182,7 +182,7 @@ Get-ChildItem $env:LOCALAPPDATA -Directory -ErrorAction SilentlyContinue | ForEa
     Write-Host "[!] Fake extension in: $($_.FullName)" -ForegroundColor Red; $found = $true
   }
 }
-# 4. PowerShell loader
+# 4. PowerShell Loader
 Get-ChildItem $env:TEMP -Filter 'S*.ps1' -ErrorAction SilentlyContinue | Where-Object { (Get-Content $_.FullName -Raw) -match 'VirtualAlloc' } | ForEach-Object {
   Write-Host "[!] Suspicious script: $($_.FullName)" -ForegroundColor Red; $found = $true
 }
