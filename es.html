@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NVIDIAEpic / RazerControlCenter: indicadores y limpieza</title>
+<title>NVIDIAEpic.py / RazerControlCenter malware: IOCs and removal guide</title>
 <link rel="alternate" hreflang="en" href="index.html">
 <link rel="alternate" hreflang="es" href="es.html">
 <meta property="og:type" content="article">
-<meta property="og:title" content="NVIDIAEpic / RazerControlCenter: indicadores y limpieza">
-<meta property="og:description" content="IOCs y guía de limpieza: clipper NVIDIAEpic.py + extensión falsa 'Save to Google Drive' en Edge (ClickFix).">
-<meta name="description" content="Indicadores de compromiso (IOCs) y guía de limpieza para una infección ClickFix que instala el clipper NVIDIAEpic.py en C:\ProgramData\RazerControlCenter y una extensión falsa 'Save to Google Drive' en Edge.">
+<meta property="og:title" content="NVIDIAEpic.py / RazerControlCenter malware: IOCs and removal guide">
+<meta property="og:description" content="Crypto clipper NVIDIAEpic.py + fake 'Save to Google Drive' Edge extension, delivered via ClickFix. Hashes, paths, domains, wallets and cleanup steps.">
+<meta name="description" content="Indicators of compromise (IOCs) and removal guide for a ClickFix infection that installs the NVIDIAEpic.py crypto clipper in C:\ProgramData\RazerControlCenter and a fake 'Save to Google Drive' extension in Microsoft Edge.">
 <style>
 :root{
   --bg:#fbfaf7; --fg:#1d1d1f; --muted:#5c5c63; --card:#ffffff; --line:#e4e2dc;
@@ -62,91 +62,91 @@ footer{margin-top:3em;color:var(--muted);font-size:.85rem}
 <main>
 
 <span class="tag">Malware · Windows · ClickFix</span>
-<h1>NVIDIAEpic.py / RazerControlCenter: qué es y cómo limpiarlo</h1>
-<p class="meta">Última actualización: 2 de noviembre de 2026 · Basado en un caso real analizado a mano · <a href="index.html" hreflang="en">English version</a></p>
+<h1>NVIDIAEpic.py / RazerControlCenter: what it is and how to remove it</h1>
+<p class="meta">Last updated: November 2, 2026 · Based on a real case analyzed by hand · <a href="es.html" hreflang="es">Versión en español</a></p>
 
 <div class="alert">
-<strong>¿Llegaste aquí buscando <code>NVIDIAEpic</code>, <code>RazerControlCenter</code> o uno de los hashes?</strong><br>
-Tu equipo probablemente está infectado. Desde <strong>otro dispositivo</strong> (tu celular u otra computadora), cambia tus contraseñas y cierra todas tus sesiones abiertas. Después sigue la <a href="#limpieza">guía de limpieza</a>. No cambies contraseñas desde la computadora infectada.
+<strong>Did you land here searching for <code>NVIDIAEpic</code>, <code>RazerControlCenter</code> or one of the hashes?</strong><br>
+Your computer is probably infected. From <strong>another device</strong> (your phone or another computer), change your passwords and sign out of all your open sessions. Then follow the <a href="#cleanup">cleanup guide</a>. Do not change passwords from the infected computer.
 </div>
 
-<h3>Contenido</h3>
+<h3>Contents</h3>
 <ul class="toc">
-  <li><a href="#resumen">Resumen</a></li>
-  <li><a href="#cadena">Cómo llega</a></li>
-  <li><a href="#iocs">Indicadores (IOCs)</a></li>
-  <li><a href="#actividad">Actividad en wallets</a></li>
-  <li><a href="#revisar">¿Estoy infectado?</a></li>
-  <li><a href="#limpieza">Limpieza</a></li>
-  <li><a href="#cuentas">Cuentas y contraseñas</a></li>
-  <li><a href="#reportar">Dónde reportar</a></li>
+  <li><a href="#summary">Summary</a></li>
+  <li><a href="#chain">How it gets in</a></li>
+  <li><a href="#iocs">Indicators (IOCs)</a></li>
+  <li><a href="#activity">Wallet activity</a></li>
+  <li><a href="#check">Am I infected?</a></li>
+  <li><a href="#cleanup">Cleanup</a></li>
+  <li><a href="#accounts">Accounts and passwords</a></li>
+  <li><a href="#report">Where to report</a></li>
 </ul>
 
-<h2 id="resumen">Resumen</h2>
-<p>Es un ataque en varias etapas. Entra con un <strong>captcha falso</strong> (técnica conocida como <em>ClickFix</em>) que te pide presionar <kbd>Win</kbd>+<kbd>R</kbd>, pegar y dar Enter. Con eso ejecutas, sin saberlo, un script de PowerShell que:</p>
+<h2 id="summary">Summary</h2>
+<p>This is a multi-stage attack. It starts with a <strong>fake captcha</strong> (a technique known as <em>ClickFix</em>) that asks you to press <kbd>Win</kbd>+<kbd>R</kbd>, paste and hit Enter. Doing that unknowingly runs a PowerShell script that:</p>
 <ol>
-  <li>Desactiva protecciones de Windows (AMSI) y descarga código cifrado que se ejecuta <strong>solo en memoria</strong>. Lo más probable es que sea un <strong>infostealer</strong> que roba contraseñas, cookies y sesiones del navegador.</li>
-  <li>Instala un <strong>clipper de criptomonedas</strong> en Python (<code>NVIDIAEpic.py</code>) que arranca con Windows y cambia las direcciones de wallet que copias por las del atacante.</li>
-  <li>Instala una <strong>extensión maliciosa en Edge</strong>, disfrazada de <em>"Save to Google Drive"</em> de <em>"Google inc."</em>, con acceso a cookies, portapapeles, historial y a todas las páginas que visitas.</li>
+  <li>Disables Windows protections (AMSI) and downloads encrypted code that runs <strong>only in memory</strong>. Most likely an <strong>infostealer</strong> that steals browser passwords, cookies and sessions.</li>
+  <li>Installs a Python <strong>crypto clipper</strong> (<code>NVIDIAEpic.py</code>) that starts with Windows and swaps any wallet address you copy for one of the attacker's.</li>
+  <li>Installs a <strong>malicious Edge extension</strong> posing as <em>"Save to Google Drive"</em> by <em>"Google inc."</em>, with access to cookies, clipboard, history and every page you visit.</li>
 </ol>
-<p>Señales comunes: tu cuenta de <strong>Discord</strong> u otras redes publica sola estafas (por ejemplo, un supuesto "casino cripto de MrBeast" con código promocional), aparecen sesiones desconocidas o te llegan avisos de inicio de sesión que no hiciste.</p>
-<p>Al momento de escribir esto, <strong>ningún antivirus detectaba</strong> los archivos (VirusTotal no conocía los hashes y Microsoft Defender no encontró nada). El código está fuertemente ofuscado y probablemente se genera distinto para cada víctima, así que tus hashes pueden no coincidir. <strong>Guíate más por las rutas y nombres que por el hash.</strong></p>
+<p>Common signs: your <strong>Discord</strong> or other social accounts post scams on their own (for example, a fake "MrBeast crypto casino" with a promo code), unknown sessions show up, or you get sign-in alerts you didn't trigger.</p>
+<p>At the time of writing, <strong>no antivirus detected</strong> these files (VirusTotal didn't know the hashes and Microsoft Defender found nothing). The code is heavily obfuscated and is probably generated differently for each victim, so your hashes may not match. <strong>Rely on the paths and names more than on the hashes.</strong></p>
 
-<h2 id="cadena">Cómo llega</h2>
-<p>En el caso analizado, la infección empezó con un enlace en la descripción de un video viejo de YouTube (un cover de piano que prometía partituras gratis). El dominio original probablemente expiró y ahora redirige a través de redes de anuncios:</p>
+<h2 id="chain">How it gets in</h2>
+<p>In the analyzed case, the infection started with a link in the description of an old YouTube video (a piano cover promising free sheet music). The original domain was probably abandoned and now redirects through ad networks:</p>
 <ul class="chain">
-  <li><code>youtubesheetmusic[.]com/artists/…</code>: enlace original en la descripción del video</li>
-  <li><code>click-v4.junclikrmedi[.]com/click?i=…</code>: rastreador de clics publicitarios</li>
-  <li><code>breakthroughdev[.]buzz/index51.php?flow_id=…&amp;campaign=…</code>: red que revende el tráfico</li>
-  <li><code>hya.codedevfuture[.]buzz/?…</code>: <strong>captcha falso</strong> que pide <kbd>Win</kbd>+<kbd>R</kbd> → <kbd>Ctrl</kbd>+<kbd>V</kbd> → <kbd>Enter</kbd>, y luego muestra "site not found"</li>
-  <li>Se crea <code>%TEMP%\S422.ps1</code>, que descarga <code>hxxp://45.155.69[.]180/yrjrs/sava.ra</code> y lo ejecuta en memoria</li>
+  <li><code>youtubesheetmusic[.]com/artists/…</code>: original link in the video description</li>
+  <li><code>click-v4.junclikrmedi[.]com/click?i=…</code>: ad click tracker</li>
+  <li><code>breakthroughdev[.]buzz/index51.php?flow_id=…&amp;campaign=…</code>: traffic reselling network</li>
+  <li><code>hya.codedevfuture[.]buzz/?…</code>: <strong>fake captcha</strong> asking for <kbd>Win</kbd>+<kbd>R</kbd> → <kbd>Ctrl</kbd>+<kbd>V</kbd> → <kbd>Enter</kbd>, then shows "site not found"</li>
+  <li><code>%TEMP%\S422.ps1</code> is created; it downloads <code>hxxp://45.155.69[.]180/yrjrs/sava.ra</code> and runs it in memory</li>
 </ul>
-<div class="card"><strong>Regla general:</strong> ninguna página legítima te pide pegar algo en <kbd>Win</kbd>+<kbd>R</kbd>, PowerShell o la terminal para "verificar que eres humano". Si ves eso, cierra la página.</div>
+<div class="card"><strong>Rule of thumb:</strong> no legitimate website will ever ask you to paste something into <kbd>Win</kbd>+<kbd>R</kbd>, PowerShell or a terminal to "verify you are human". If you see that, close the page.</div>
 
-<h2 id="iocs">Indicadores de compromiso (IOCs)</h2>
-<p class="meta">Los dominios y URLs están "desactivados" (<code>[.]</code>, <code>hxxp</code>) para que no se abran por accidente.</p>
+<h2 id="iocs">Indicators of compromise (IOCs)</h2>
+<p class="meta">Domains and URLs are defanged (<code>[.]</code>, <code>hxxp</code>) so they can't be opened by accident.</p>
 
-<h3>Hashes SHA-256</h3>
+<h3>SHA-256 hashes</h3>
 <div class="table-wrap"><table>
-<tr><th>Archivo</th><th>SHA-256</th></tr>
+<tr><th>File</th><th>SHA-256</th></tr>
 <tr><td><code>NVIDIAEpic.py</code> (clipper, 375,518 bytes)</td><td><code>e79386ac66b0f3a07f063b444e390c50ac744597c27f968a211de4ff275f3d7b</code></td></tr>
-<tr><td><code>S422.ps1</code> (cargador PowerShell, 7,905 bytes)</td><td><code>693e46e9bb68c0c74bf84d7ed9b3bfcc14ab0d67ae0b1be59aaabac254ac551e</code></td></tr>
+<tr><td><code>S422.ps1</code> (PowerShell loader, 7,905 bytes)</td><td><code>693e46e9bb68c0c74bf84d7ed9b3bfcc14ab0d67ae0b1be59aaabac254ac551e</code></td></tr>
 </table></div>
 
-<h3>Archivos y carpetas</h3>
+<h3>Files and folders</h3>
 <div class="table-wrap"><table>
-<tr><th>Ruta</th><th>Qué es</th></tr>
-<tr><td><code>C:\ProgramData\RazerControlCenter\</code></td><td>Python 3.12 portátil (<code>pythonw.exe</code>) + <code>NVIDIAEpic.py</code>. No tiene relación con Razer.</td></tr>
-<tr><td><code>%TEMP%\S422.ps1</code></td><td>Cargador PowerShell (desactiva AMSI, descarga y ejecuta código en memoria)</td></tr>
-<tr><td><code>%LOCALAPPDATA%\&lt;nombre aleatorio&gt;\manifest.json</code> + decenas de <code>.js</code></td><td>Extensión maliciosa (en el caso analizado: <code>BaZqZuJmdaVeNu</code>). El <code>manifest.json</code> dice <code>"name": "Save to Google Drive"</code>, <code>"author": "Google inc."</code>, <code>"version": "4.0.6"</code></td></tr>
-<tr><td><code>%LOCALAPPDATA%\&lt;aleatorio&gt;.e4</code> (~1.5 MB)</td><td>Datos cifrados (caso analizado: <code>ifwf.e4</code>)</td></tr>
-<tr><td><code>%LOCALAPPDATA%\&lt;aleatorio&gt;.png</code> (64 bytes)</td><td>No son imágenes: contienen 64 caracteres hexadecimales (caso analizado: <code>4UUZEw.png</code>, <code>ql2vj.png</code>)</td></tr>
-<tr><td><code>%LOCALAPPDATA%\CrashDumps\powershell.exe.*.dmp</code></td><td>Volcado de memoria de PowerShell al momento del ataque (puede contener la carga en memoria)</td></tr>
-<tr><td><code>…\Edge\User Data\*\Secure Preferences</code></td><td>Modificado en <strong>todos</strong> los perfiles de Edge (y en <code>OneAuth\WebView2\EBWebView\Default</code>) para registrar la extensión sin pasar por la tienda</td></tr>
+<tr><th>Path</th><th>What it is</th></tr>
+<tr><td><code>C:\ProgramData\RazerControlCenter\</code></td><td>Portable Python 3.12 (<code>pythonw.exe</code>) + <code>NVIDIAEpic.py</code>. Not related to Razer.</td></tr>
+<tr><td><code>%TEMP%\S422.ps1</code></td><td>PowerShell loader (patches AMSI, downloads and runs code in memory)</td></tr>
+<tr><td><code>%LOCALAPPDATA%\&lt;random name&gt;\manifest.json</code> + dozens of <code>.js</code> files</td><td>Malicious extension (analyzed case: <code>BaZqZuJmdaVeNu</code>). The <code>manifest.json</code> says <code>"name": "Save to Google Drive"</code>, <code>"author": "Google inc."</code>, <code>"version": "4.0.6"</code></td></tr>
+<tr><td><code>%LOCALAPPDATA%\&lt;random&gt;.e4</code> (~1.5 MB)</td><td>Encrypted data (analyzed case: <code>ifwf.e4</code>)</td></tr>
+<tr><td><code>%LOCALAPPDATA%\&lt;random&gt;.png</code> (64 bytes)</td><td>Not images: they contain 64 hexadecimal characters (analyzed case: <code>4UUZEw.png</code>, <code>ql2vj.png</code>)</td></tr>
+<tr><td><code>%LOCALAPPDATA%\CrashDumps\powershell.exe.*.dmp</code></td><td>PowerShell memory dump from the time of the attack (may contain the in-memory payload)</td></tr>
+<tr><td><code>…\Edge\User Data\*\Secure Preferences</code></td><td>Modified in <strong>every</strong> Edge profile (and in <code>OneAuth\WebView2\EBWebView\Default</code>) to register the extension without going through the store</td></tr>
 </table></div>
 
-<h3>Registro (arranque)</h3>
+<h3>Registry (startup)</h3>
 <div class="table-wrap"><table>
-<tr><th>Clave</th><th>Valor</th></tr>
+<tr><th>Key</th><th>Value</th></tr>
 <tr><td><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code></td><td><code>NVIDIAEpic</code> = <code>"C:\ProgramData\RazerControlCenter\pythonw.exe" "C:\ProgramData\RazerControlCenter\NVIDIAEpic.py"</code></td></tr>
 </table></div>
-<p>En "Configuración → Aplicaciones → Inicio" aparece como <strong>"Python"</strong> de <em>Python Software Foundation</em>.</p>
+<p>In "Settings → Apps → Startup" it shows up as <strong>"Python"</strong> by <em>Python Software Foundation</em>.</p>
 
-<h3>Extensión falsa "Save to Google Drive"</h3>
-<p>Manifest V3. Permisos: <code>cookies</code>, <code>clipboardRead</code>, <code>clipboardWrite</code>, <code>history</code>, <code>tabs</code>, <code>topSites</code>, <code>bookmarks</code>, <code>webRequest</code>, <code>webNavigation</code>, <code>scripting</code>, <code>management</code>, <code>nativeMessaging</code>, <code>downloads</code>, <code>declarativeNetRequest</code>, <code>system.cpu/memory/display/storage</code>, <code>idle</code>, entre otros, con <code>host_permissions: &lt;all_urls&gt;</code>. Inyecta scripts en todas las páginas desde <code>document_start</code>, incluido uno en <code>"world": "MAIN"</code>. Trae una regla <code>declarativeNetRequest</code> (apagada por defecto) que elimina las cabeceras <code>Content-Security-Policy</code> y <code>X-Frame-Options</code>.</p>
+<h3>Fake "Save to Google Drive" extension</h3>
+<p>Manifest V3. Permissions: <code>cookies</code>, <code>clipboardRead</code>, <code>clipboardWrite</code>, <code>history</code>, <code>tabs</code>, <code>topSites</code>, <code>bookmarks</code>, <code>webRequest</code>, <code>webNavigation</code>, <code>scripting</code>, <code>management</code>, <code>nativeMessaging</code>, <code>downloads</code>, <code>declarativeNetRequest</code>, <code>system.cpu/memory/display/storage</code>, <code>idle</code>, among others, with <code>host_permissions: &lt;all_urls&gt;</code>. It injects scripts into every page at <code>document_start</code>, including one in <code>"world": "MAIN"</code>. It ships a <code>declarativeNetRequest</code> rule (disabled by default) that strips the <code>Content-Security-Policy</code> and <code>X-Frame-Options</code> headers.</p>
 
-<h3>Red</h3>
+<h3>Network</h3>
 <div class="table-wrap"><table>
-<tr><th>Indicador</th><th>Rol</th></tr>
-<tr><td><code>hxxp://45.155.69[.]180/yrjrs/sava.ra</code></td><td>Descarga de la carga cifrada (AES-CBC)</td></tr>
-<tr><td><code>hya.codedevfuture[.]buzz</code></td><td>Página del captcha falso</td></tr>
-<tr><td><code>breakthroughdev[.]buzz</code></td><td>Redirección / distribución de tráfico</td></tr>
-<tr><td><code>click-v4.junclikrmedi[.]com</code></td><td>Rastreador de clics en la cadena de redirección</td></tr>
-<tr><td><code>youtubesheetmusic[.]com</code></td><td>Punto de entrada (enlace en descripción de YouTube; probablemente dominio abandonado)</td></tr>
+<tr><th>Indicator</th><th>Role</th></tr>
+<tr><td><code>hxxp://45.155.69[.]180/yrjrs/sava.ra</code></td><td>Encrypted payload download (AES-CBC)</td></tr>
+<tr><td><code>hya.codedevfuture[.]buzz</code></td><td>Fake captcha page</td></tr>
+<tr><td><code>breakthroughdev[.]buzz</code></td><td>Redirect / traffic distribution</td></tr>
+<tr><td><code>click-v4.junclikrmedi[.]com</code></td><td>Click tracker in the redirect chain</td></tr>
+<tr><td><code>youtubesheetmusic[.]com</code></td><td>Entry point (YouTube description link; probably an abandoned domain)</td></tr>
 </table></div>
 
-<h3>Wallets del atacante (clipper)</h3>
-<p>Direcciones que aparecen <strong>en texto plano</strong> dentro de <code>NVIDIAEpic.py</code>. El script contiene muchas más, cifradas. Si alguna vez mandaste cripto a una de estas, fue el clipper. Ver <a href="#actividad">actividad observada</a>.</p>
+<h3>Attacker wallets (clipper)</h3>
+<p>Addresses that appear <strong>in plain text</strong> inside <code>NVIDIAEpic.py</code>. The script contains many more, encrypted. If you ever sent crypto to one of these, it was the clipper. See <a href="#activity">observed activity</a>.</p>
 <pre><code>bc1q0gm9tn3tw8g2y6dds5zdrp3hycemw33kfx5g25
 bc1qawxdqwkggqk2mdtet92vetq5t78rtzumzxzntg
 bc1qlv22c7fsu22wyuj0v8v5davchmn6cgvvn68a9l
@@ -164,140 +164,142 @@ MRwLeqhLJMqLoGjJcvza3Nk8ZkUHe28CYf
 TZ8Fswt2FG4EfLMW43SAkebfkGnheNGtNL
 RVnPakDbAuW7G3VacbTeoWPcwyyAWthvVo</code></pre>
 
-<h3 id="actividad">Actividad observada en las wallets</h3>
-<p>Revisado el 2 de noviembre de 2026 con exploradores públicos de blockchain. Los montos en USD son aproximados, al precio de ese día. Las fechas son las que muestra el explorador.</p>
+<h3 id="activity">Observed wallet activity</h3>
+<p>Checked on November 2, 2026 with public block explorers. Amounts in USD are approximate, at the price on that day. Dates are as shown by the explorer.</p>
 
 <h4>Litecoin <code>MRwLeqhLJMqLoGjJcvza3Nk8ZkUHe28CYf</code></h4>
-<p><strong>Saldo: 1.43814267 LTC (~$78 USD), nunca movido.</strong> Todos los pagos recibidos siguen en la dirección. Varios parecen de víctimas que pegaron una dirección cambiada por el clipper, incluidos retiros de exchanges (una entrada grande repartida en muchas salidas).</p>
+<p><strong>Balance: 1.43814267 LTC (~$78 USD), never spent.</strong> Every incoming payment is still sitting in the address. Several of them look like victims who pasted an address the clipper had swapped, including withdrawals from exchanges (one large input split into many outputs).</p>
 <div class="table-wrap"><table>
-<tr><th>Fecha</th><th>Recibido (LTC)</th><th>Origen probable</th><th>Transacción</th></tr>
-<tr><td>2026-10-10</td><td>0.00007791</td><td>Spam / dusting (la misma cantidad mínima a docenas de direcciones)</td><td><code>a05483873856342142b2fe5c239d28169a72ffc7e391aa607437c684713b0180</code></td></tr>
-<tr><td>2026-10-13</td><td>0.00885967</td><td>Wallet personal que junta entradas pequeñas: probable víctima</td><td><code>773ace43e8698f09cf823e91e5d93e4d7eaaddb670446baa308bfc504859b9bc</code></td></tr>
-<tr><td>2026-10-27</td><td>0.95386416</td><td>Retiro masivo (tipo exchange): probable víctima</td><td><code>d29f95ab0e591bbc94bf29290eb0f8a1db9205790b7a30c86aa51ee1903d0384</code></td></tr>
-<tr><td>2026-10-29</td><td>0.24333093</td><td>Wallet personal: probable víctima</td><td><code>ee806e43a3c46c6ec4869244b2fe80d099ae163d6a4a930d2a21569d37efe4e1</code></td></tr>
-<tr><td>2026-10-30</td><td>0.23201000</td><td>Wallet de un servicio o exchange: probable víctima</td><td><code>e8dd242ddc98e272b463559aa0e2a49804d7cce94bbb4164ba6d8144b946858d</code></td></tr>
+<tr><th>Date</th><th>Received (LTC)</th><th>Likely source</th><th>Transaction</th></tr>
+<tr><td>2026-10-10</td><td>0.00007791</td><td>Dust/spam (same tiny amount sent to dozens of addresses)</td><td><code>a05483873856342142b2fe5c239d28169a72ffc7e391aa607437c684713b0180</code></td></tr>
+<tr><td>2026-10-13</td><td>0.00885967</td><td>Personal wallet consolidating small inputs: probable victim</td><td><code>773ace43e8698f09cf823e91e5d93e4d7eaaddb670446baa308bfc504859b9bc</code></td></tr>
+<tr><td>2026-10-27</td><td>0.95386416</td><td>Batch withdrawal (exchange-like): probable victim</td><td><code>d29f95ab0e591bbc94bf29290eb0f8a1db9205790b7a30c86aa51ee1903d0384</code></td></tr>
+<tr><td>2026-10-29</td><td>0.24333093</td><td>Personal wallet: probable victim</td><td><code>ee806e43a3c46c6ec4869244b2fe80d099ae163d6a4a930d2a21569d37efe4e1</code></td></tr>
+<tr><td>2026-10-30</td><td>0.23201000</td><td>Service / exchange hot wallet: probable victim</td><td><code>e8dd242ddc98e272b463559aa0e2a49804d7cce94bbb4164ba6d8144b946858d</code></td></tr>
 </table></div>
 
 <h4>Litecoin <code>LPbLK6dGS4a8WrZsKaD2ZwUcSeomKpRT7y</code></h4>
-<p>Recibió <strong>0.07093353 LTC</strong> el 2026-10-18 desde un retiro masivo de un exchange (<code>a82ee9178912264c64b761dd8fc3d89813b5ed4aac3f0c416c28868c971ad515</code>). El 2026-10-19 el atacante lo gastó junto con tres entradas de otra dirección y mandó el total, <strong>0.91891440 LTC</strong>, a una sola dirección (<code>1f630b9f4f8fe9a12250728d324927d9472fa019cead5e48ff2d36086df60972</code>).</p>
+<p>Received <strong>0.07093353 LTC</strong> on 2026-10-18 from an exchange batch withdrawal (<code>a82ee9178912264c64b761dd8fc3d89813b5ed4aac3f0c416c28868c971ad515</code>). On 2026-10-19 the attacker spent it together with three inputs from another address and sent the total, <strong>0.91891440 LTC</strong>, to a single address (<code>1f630b9f4f8fe9a12250728d324927d9472fa019cead5e48ff2d36086df60972</code>).</p>
 
-<h4>Direcciones relacionadas (no vienen en la muestra analizada)</h4>
-<p>Gastar varias direcciones en una misma transacción casi siempre significa que las controla la misma persona (la heurística de <em>common-input-ownership</em>). Por eso estas dos direcciones <strong>probablemente son del atacante</strong>. Es un indicio fuerte, no una prueba.</p>
+<h4>Related addresses (not in the analyzed sample)</h4>
+<p>Spending several addresses in one transaction usually means one owner controls all of them (the <em>common-input-ownership</em> heuristic). That makes these two addresses <strong>likely attacker-controlled</strong>. This is a strong indication, not proof.</p>
 <div class="table-wrap"><table>
-<tr><th>Dirección</th><th>Papel</th></tr>
-<tr><td><code>LaB1ndToPZkHHhnWyxXxw3AQu2RUudF6xB</code></td><td>Se gastó junto con <code>LPbLK6…</code> el 2026-10-19 (0.42844884 + 0.42 + 0.00016904 LTC). Probablemente otra dirección del clipper, de otra versión del malware.</td></tr>
-<tr><td><code>ltc1qsm2lsverjq049xfjgf…gq3usacn</code></td><td>Destino de los 0.91891440 LTC juntados. Posiblemente donde se acumula lo robado. Dirección completa en la transacción <code>1f630b9f…df60972</code>.</td></tr>
+<tr><th>Address</th><th>Role</th></tr>
+<tr><td><code>LaB1ndToPZkHHhnWyxXxw3AQu2RUudF6xB</code></td><td>Spent together with <code>LPbLK6…</code> on 2026-10-19 (0.42844884 + 0.42 + 0.00016904 LTC). Probably another clipper address, from a different build of the malware.</td></tr>
+<tr><td><code>ltc1qsm2lsverjq049xfjgf…gq3usacn</code></td><td>Destination of the consolidated 0.91891440 LTC. Possibly where stolen funds are collected. Full address in transaction <code>1f630b9f…df60972</code>.</td></tr>
 </table></div>
 
-<h4>Otras wallets</h4>
+<h4>Other wallets</h4>
 <ul>
-  <li><code>0x149F2BD8ea695f1aF16D7B641b0132D7ccE12CCf</code>: sin transacciones en Ethereum; el explorador muestra un saldo pequeño (~$5) en otra red EVM.</li>
-  <li><code>TZ8Fswt2FG4EfLMW43SAkebfkGnheNGtNL</code> (Tron): nunca se ha usado.</li>
+  <li><code>0x149F2BD8ea695f1aF16D7B641b0132D7ccE12CCf</code>: no transactions on Ethereum mainnet; the explorer shows a small balance (~$5) on another EVM chain.</li>
+  <li><code>TZ8Fswt2FG4EfLMW43SAkebfkGnheNGtNL</code> (Tron): never used.</li>
+  <li>All nine Bitcoin addresses, <code>ltc1q73drw93z7l45y3ffcx7y3cjjw4jazt69hzyx47</code> and <code>LVEfRTSe2TmDDbAao81QSHKbmoEvzGq5Po</code>: no transactions as of November 2, 2026.</li>
+  <li><code>RVnPakDbAuW7G3VacbTeoWPcwyyAWthvVo</code> (Ravencoin): not checked (explorer unavailable).</li>
 </ul>
-<p>La campaña estaba activa <strong>al menos desde el 10 de octubre de 2026</strong>, semanas antes de la infección documentada aquí.</p>
+<p>The campaign was active <strong>at least since October 10, 2026</strong>, weeks before the infection documented here.</p>
 
-<h2 id="revisar">¿Estoy infectado? Revisión rápida</h2>
-<p>Este script <strong>solo lee</strong>, no cambia ni borra nada. Ábrelo en PowerShell normal (no hace falta administrador) y léelo antes de correrlo; es buena práctica con cualquier comando que encuentres en internet, incluido este.</p>
+<h2 id="check">Am I infected? Quick check</h2>
+<p>This script <strong>only reads</strong>; it doesn't change or delete anything. Open a normal PowerShell window (no administrator needed) and read it before running it. That's good practice with any command you find online, including this one.</p>
 <pre><code>$found = $false
-# 1. Carpeta del clipper
+# 1. Clipper folder
 if (Test-Path "$env:ProgramData\RazerControlCenter") {
-  Write-Host "[!] Existe $env:ProgramData\RazerControlCenter" -ForegroundColor Red; $found = $true
+  Write-Host "[!] Found $env:ProgramData\RazerControlCenter" -ForegroundColor Red; $found = $true
   Get-ChildItem "$env:ProgramData\RazerControlCenter" -Filter *.py | Get-FileHash -Algorithm SHA256 | Format-List
 }
-# 2. Entrada de arranque
+# 2. Startup entry
 $run = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $run.PSObject.Properties | Where-Object { $_.Name -notlike 'PS*' -and ($_.Name -eq 'NVIDIAEpic' -or "$($_.Value)" -match 'RazerControlCenter|pythonw') } | ForEach-Object {
-  Write-Host "[!] Arranque sospechoso: $($_.Name) = $($_.Value)" -ForegroundColor Red; $found = $true
+  Write-Host "[!] Suspicious startup entry: $($_.Name) = $($_.Value)" -ForegroundColor Red; $found = $true
 }
-# 3. Extensión falsa "Save to Google Drive" en una carpeta de LOCALAPPDATA
+# 3. Fake "Save to Google Drive" extension in a LOCALAPPDATA folder
 Get-ChildItem $env:LOCALAPPDATA -Directory -ErrorAction SilentlyContinue | ForEach-Object {
   $m = Join-Path $_.FullName 'manifest.json'
   if ((Test-Path $m) -and (Select-String -Path $m -Pattern 'Save to Google Drive' -Quiet)) {
-    Write-Host "[!] Extensión falsa en: $($_.FullName)" -ForegroundColor Red; $found = $true
+    Write-Host "[!] Fake extension in: $($_.FullName)" -ForegroundColor Red; $found = $true
   }
 }
-# 4. Cargador PowerShell
+# 4. PowerShell loader
 Get-ChildItem $env:TEMP -Filter 'S*.ps1' -ErrorAction SilentlyContinue | Where-Object { (Get-Content $_.FullName -Raw) -match 'VirtualAlloc' } | ForEach-Object {
-  Write-Host "[!] Script sospechoso: $($_.FullName)" -ForegroundColor Red; $found = $true
+  Write-Host "[!] Suspicious script: $($_.FullName)" -ForegroundColor Red; $found = $true
 }
-if (-not $found) { Write-Host "No se encontraron los indicadores conocidos." -ForegroundColor Green }</code></pre>
-<p>Que no aparezca nada no garantiza que estés limpio: los nombres aleatorios pueden cambiar entre víctimas.</p>
+if (-not $found) { Write-Host "None of the known indicators were found." -ForegroundColor Green }</code></pre>
+<p>Finding nothing doesn't guarantee you're clean: the random names can change between victims.</p>
 
-<h2 id="limpieza">Limpieza</h2>
+<h2 id="cleanup">Cleanup</h2>
 <div class="card">
-<strong>Lo más seguro es reinstalar Windows</strong>, porque parte del ataque corre en memoria y no se puede saber todo lo que hizo. Si prefieres limpiar a mano, lo ideal es hacerlo <strong>desde otro sistema</strong> (un Linux en USB o en arranque dual) con Windows apagado, para que el malware no esté corriendo. Si lo haces desde Windows, primero <strong>desconéctate de internet</strong> y <strong>no abras Edge</strong>.
+<strong>The safest option is to reinstall Windows</strong>, because part of the attack runs in memory and there's no way to know everything it did. If you'd rather clean it by hand, ideally do it <strong>from another operating system</strong> (a Linux live USB or dual boot) with Windows shut down, so the malware isn't running. If you do it from Windows, first <strong>disconnect from the internet</strong> and <strong>don't open Edge</strong>.
 </div>
 
-<h3>1. Antes de tocar la computadora</h3>
-<p>Desde el celular u otro equipo limpio, cambia tus contraseñas y <strong>cierra todas las sesiones</strong>. Detalles en <a href="#cuentas">Cuentas y contraseñas</a>.</p>
+<h3>1. Before touching the computer</h3>
+<p>From your phone or another clean device, change your passwords and <strong>sign out of all sessions</strong>. Details in <a href="#accounts">Accounts and passwords</a>.</p>
 
-<h3>2. Cortar el arranque</h3>
+<h3>2. Remove the startup entry</h3>
 <pre><code>Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'NVIDIAEpic' -ErrorAction SilentlyContinue
 Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run' -Name 'NVIDIAEpic' -ErrorAction SilentlyContinue</code></pre>
-<p>Reinicia la computadora para que <code>pythonw.exe</code> deje de correr.</p>
+<p>Restart the computer so <code>pythonw.exe</code> stops running.</p>
 
-<h3>3. Quitar la extensión de Edge</h3>
-<p>Con <strong>Edge completamente cerrado</strong>, cambia el nombre del archivo <code>Secure Preferences</code> en los perfiles donde está registrada la extensión. En la primera línea pon el <strong>nombre de la carpeta</strong> que encontró el script de revisión (solo el nombre, por ejemplo <code>BaZqZuJmdaVeNu</code>). Hazlo antes de borrar la carpeta en el paso 4.</p>
-<pre><code>$ext = 'NOMBRE_DE_LA_CARPETA'   # cámbialo por el nombre real
+<h3>3. Unregister the Edge extension</h3>
+<p>With <strong>Edge fully closed</strong>, rename the <code>Secure Preferences</code> file in every profile where the extension is registered. On the first line, put the <strong>folder name</strong> the check script found (just the name, e.g. <code>BaZqZuJmdaVeNu</code>). Do this before deleting the folder in step 4.</p>
+<pre><code>$ext = 'FOLDER_NAME'   # replace with the real name
 Get-Process msedge -ErrorAction SilentlyContinue | Stop-Process -Force
 $ud = "$env:LOCALAPPDATA\Microsoft\Edge\User Data"
 Get-ChildItem $ud -Recurse -Filter 'Secure Preferences' -ErrorAction SilentlyContinue |
   Where-Object { Select-String -Path $_.FullName -Pattern $ext -SimpleMatch -Quiet } |
-  ForEach-Object { Rename-Item $_.FullName ($_.Name + '.infectado.bak'); Write-Host "Renombrado: $($_.FullName)" }</code></pre>
-<p>Edge crea uno nuevo al abrir. Puede que tengas que reactivar algunas extensiones legítimas; tus marcadores, historial y contraseñas guardadas no están en ese archivo. Después abre <code>edge://extensions</code> en <strong>cada perfil</strong> y confirma que no aparezca "Save to Google Drive". Si usas Chrome u otro navegador basado en Chromium, revisa también su carpeta <code>User Data</code>.</p>
+  ForEach-Object { Rename-Item $_.FullName ($_.Name + '.infected.bak'); Write-Host "Renamed: $($_.FullName)" }</code></pre>
+<p>Edge creates a new one when it opens. You may need to re-enable some legitimate extensions; your bookmarks, history and saved passwords are not in that file. Then open <code>edge://extensions</code> in <strong>every profile</strong> and make sure "Save to Google Drive" is gone. If you use Chrome or another Chromium-based browser, check its <code>User Data</code> folder too.</p>
 
-<h3>4. Borrar los archivos</h3>
+<h3>4. Delete the files</h3>
 <ul>
-  <li><code>C:\ProgramData\RazerControlCenter\</code> (carpeta completa)</li>
-  <li><code>%TEMP%\S422.ps1</code> (o un <code>.ps1</code> similar creado a la misma hora)</li>
-  <li>La carpeta de la extensión en <code>%LOCALAPPDATA%</code> (la que encontró el script de revisión)</li>
-  <li>El archivo <code>.e4</code> y los <code>.png</code> de 64 bytes en <code>%LOCALAPPDATA%</code> creados a la misma hora</li>
-  <li><code>%LOCALAPPDATA%\CrashDumps\powershell.exe.*.dmp</code> de esa fecha</li>
+  <li><code>C:\ProgramData\RazerControlCenter\</code> (entire folder)</li>
+  <li><code>%TEMP%\S422.ps1</code> (or a similar <code>.ps1</code> created at the same time)</li>
+  <li>The extension folder in <code>%LOCALAPPDATA%</code> (the one the check script found)</li>
+  <li>The <code>.e4</code> file and the 64-byte <code>.png</code> files in <code>%LOCALAPPDATA%</code> created at the same time</li>
+  <li><code>%LOCALAPPDATA%\CrashDumps\powershell.exe.*.dmp</code> from that date</li>
 </ul>
-<p>Para ver qué más se creó en ese momento, busca archivos en <code>%LOCALAPPDATA%</code>, <code>%APPDATA%</code>, <code>%ProgramData%</code> y <code>%TEMP%</code> con la misma fecha y hora de <code>NVIDIAEpic.py</code>.</p>
+<p>To see what else was created at that moment, look for files in <code>%LOCALAPPDATA%</code>, <code>%APPDATA%</code>, <code>%ProgramData%</code> and <code>%TEMP%</code> with the same date and time as <code>NVIDIAEpic.py</code>.</p>
 
-<h3>5. Verificar</h3>
+<h3>5. Verify</h3>
 <ul>
-  <li>Vuelve a correr el <a href="#revisar">script de revisión</a>.</li>
-  <li>Revisa también <code>HKLM\Software\Microsoft\Windows\CurrentVersion\Run</code>, las carpetas de Inicio, las tareas programadas y las exclusiones de Defender. <a href="https://learn.microsoft.com/sysinternals/downloads/autoruns">Autoruns de Sysinternals</a> muestra casi todo en una sola pantalla.</li>
-  <li>Corre el <strong>Examen sin conexión de Microsoft Defender</strong> (Seguridad de Windows → Protección contra virus y amenazas → Opciones de examen).</li>
-  <li>Activa <strong>Bloqueo de aplicaciones potencialmente no deseadas</strong> en Seguridad de Windows → Control de aplicaciones y navegador → Protección basada en reputación.</li>
-</ul>
-
-<h2 id="cuentas">Cuentas y contraseñas</h2>
-<p>Hazlo <strong>desde un dispositivo limpio</strong>. Asume que se robaron todo lo guardado en el navegador.</p>
-<ul>
-  <li><strong>Cambia las contraseñas</strong> de todo lo que tenías guardado o abierto en el navegador. Usa contraseñas largas (16+ caracteres) y distintas para cada sitio, idealmente con un gestor de contraseñas.</li>
-  <li><strong>Cierra todas las sesiones</strong> en cada servicio. Las cookies robadas permiten entrar sin contraseña ni 2FA, así que cambiar la contraseña no siempre basta.</li>
-  <li><strong>Activa 2FA</strong> con app autenticadora o llave de acceso, no por SMS.</li>
-  <li><strong>Correo:</strong> revisa la actividad reciente, los dispositivos y las reglas de <em>filtros</em> y <em>reenvío</em>. Los atacantes a veces crean reglas para esconder alertas.</li>
-  <li><strong>Discord:</strong> cambia la contraseña (invalida los tokens), revisa "Dispositivos" y "Aplicaciones autorizadas", y borra los mensajes que se enviaron desde tu cuenta.</li>
-  <li><strong>GitHub / desarrollo:</strong> revisa commits que no hiciste, rota llaves SSH, tokens de acceso y archivos <code>.ovpn</code> o credenciales que tuvieras en el disco, incluido WSL.</li>
-  <li><strong>Cripto:</strong> si tenías wallets en esa computadora, mueve los fondos a una wallet nueva creada en un dispositivo limpio. Revisa transacciones recientes contra la <a href="#iocs">lista de wallets</a>.</li>
-  <li><strong>Tarjetas:</strong> si tenías tarjetas guardadas en el navegador, revisa tus movimientos y considera pedir una nueva.</li>
-  <li><strong>Avisa a tus contactos</strong> que no abran enlaces que se hayan enviado desde tus cuentas.</li>
+  <li>Run the <a href="#check">check script</a> again.</li>
+  <li>Also check <code>HKLM\Software\Microsoft\Windows\CurrentVersion\Run</code>, the Startup folders, scheduled tasks and Defender exclusions. <a href="https://learn.microsoft.com/sysinternals/downloads/autoruns">Sysinternals Autoruns</a> shows almost all of this on one screen.</li>
+  <li>Run a <strong>Microsoft Defender Offline scan</strong> (Windows Security → Virus &amp; threat protection → Scan options).</li>
+  <li>Turn on <strong>Potentially unwanted app blocking</strong> in Windows Security → App &amp; browser control → Reputation-based protection.</li>
 </ul>
 
-<h2 id="reportar">Dónde reportar</h2>
+<h2 id="accounts">Accounts and passwords</h2>
+<p>Do this <strong>from a clean device</strong>. Assume everything saved in the browser was stolen.</p>
 <ul>
-  <li><a href="https://urlhaus.abuse.ch/">URLhaus</a>: URLs y dominios de distribución.</li>
-  <li><a href="https://bazaar.abuse.ch/">MalwareBazaar</a>: muestras y hashes.</li>
-  <li><a href="https://safebrowsing.google.com/safebrowsing/report_badware/">Google Safe Browsing</a>: para que Chrome y Edge bloqueen los dominios.</li>
-  <li>YouTube: <em>Denunciar → Spam o engañoso</em> en el video con el enlace.</li>
-  <li>La plataforma donde te llegó la estafa (Discord, etc.) y, si perdiste dinero, la policía cibernética de tu país.</li>
+  <li><strong>Change the passwords</strong> of everything you had saved or open in the browser. Use long passwords (16+ characters), a different one for each site, ideally with a password manager.</li>
+  <li><strong>Sign out of all sessions</strong> on every service. Stolen cookies let attackers in without a password or 2FA, so changing the password isn't always enough.</li>
+  <li><strong>Turn on 2FA</strong> with an authenticator app or a passkey, not SMS.</li>
+  <li><strong>Email:</strong> check recent activity, devices, and <em>filter</em> and <em>forwarding</em> rules. Attackers sometimes create rules to hide security alerts.</li>
+  <li><strong>Discord:</strong> change your password (it invalidates tokens), check "Devices" and "Authorized Apps", and delete any messages sent from your account.</li>
+  <li><strong>GitHub / development:</strong> look for commits you didn't make, and rotate SSH keys, access tokens, and any <code>.ovpn</code> files or credentials stored on the disk, including inside WSL.</li>
+  <li><strong>Crypto:</strong> if you had wallets on that computer, move the funds to a new wallet created on a clean device. Check recent transactions against the <a href="#iocs">wallet list</a>.</li>
+  <li><strong>Cards:</strong> if you had cards saved in the browser, check your statements and consider requesting a new card.</li>
+  <li><strong>Warn your contacts</strong> not to open links sent from your accounts.</li>
+</ul>
+
+<h2 id="report">Where to report</h2>
+<ul>
+  <li><a href="https://urlhaus.abuse.ch/">URLhaus</a>: distribution URLs and domains.</li>
+  <li><a href="https://bazaar.abuse.ch/">MalwareBazaar</a>: samples and hashes.</li>
+  <li><a href="https://safebrowsing.google.com/safebrowsing/report_badware/">Google Safe Browsing</a>: so Chrome and Edge block the domains.</li>
+  <li>YouTube: <em>Report → Spam or misleading</em> on the video with the link.</li>
+  <li>The platform where the scam reached you (Discord, etc.) and, if you lost money, your country's cybercrime police.</li>
 </ul>
 
 <footer>
-<p>Esta página documenta un solo caso, analizado por una víctima con ayuda de una IA. No es una herramienta profesional ni sustituye a un servicio de respuesta a incidentes. Si tienes información adicional sobre esta campaña (otros hashes, nombres de carpeta o dominios), abre un issue en el repositorio.</p>
+<p>This page documents a single case, analyzed by a victim with the help of an AI. It is not a professional tool and does not replace an incident response service. If you have more information about this campaign (other hashes, folder names or domains), please open an issue in the repository.</p>
 </footer>
 
 </main>
 <script>
 document.querySelectorAll('pre').forEach(function(pre){
-  var b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copiar';
+  var b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copy';
   b.addEventListener('click',function(){
     var t=pre.querySelector('code').innerText;
-    try{navigator.clipboard.writeText(t).then(function(){b.textContent='Copiado';setTimeout(function(){b.textContent='Copiar'},1500)})}catch(e){}
+    try{navigator.clipboard.writeText(t).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)})}catch(e){}
   });
   pre.appendChild(b);
 });
