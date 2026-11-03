@@ -32,6 +32,7 @@ main{max-width:860px;margin:0 auto;padding:32px 16px 64px}
 h1{font-size:1.9rem;line-height:1.25;margin:.2em 0 .3em}
 h2{font-size:1.35rem;margin:2.2em 0 .6em;padding-top:.4em;border-top:1px solid var(--line)}
 h3{font-size:1.05rem;margin:1.6em 0 .4em}
+h4{font-size:.98rem;margin:1.3em 0 .3em}
 p,li{max-width:72ch}
 a{color:var(--link)}
 .tag{display:inline-block;font-size:.78rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:.15em .6em;border-radius:99px}
@@ -74,6 +75,7 @@ Your computer is probably infected. From <strong>another device</strong> (your p
   <li><a href="#summary">Summary</a></li>
   <li><a href="#chain">How it gets in</a></li>
   <li><a href="#iocs">Indicators (IOCs)</a></li>
+  <li><a href="#activity">Wallet activity</a></li>
   <li><a href="#check">Am I infected?</a></li>
   <li><a href="#cleanup">Cleanup</a></li>
   <li><a href="#accounts">Accounts and passwords</a></li>
@@ -144,7 +146,7 @@ Your computer is probably infected. From <strong>another device</strong> (your p
 </table></div>
 
 <h3>Attacker wallets (clipper)</h3>
-<p>Addresses that appear <strong>in plain text</strong> inside <code>NVIDIAEpic.py</code>. The script contains many more, encrypted. If you ever sent crypto to one of these, it was the clipper.</p>
+<p>Addresses that appear <strong>in plain text</strong> inside <code>NVIDIAEpic.py</code>. The script contains many more, encrypted. If you ever sent crypto to one of these, it was the clipper. See <a href="#activity">observed activity</a>.</p>
 <pre><code>bc1q0gm9tn3tw8g2y6dds5zdrp3hycemw33kfx5g25
 bc1qawxdqwkggqk2mdtet92vetq5t78rtzumzxzntg
 bc1qlv22c7fsu22wyuj0v8v5davchmn6cgvvn68a9l
@@ -161,6 +163,38 @@ MRwLeqhLJMqLoGjJcvza3Nk8ZkUHe28CYf
 0x149F2BD8ea695f1aF16D7B641b0132D7ccE12CCf
 TZ8Fswt2FG4EfLMW43SAkebfkGnheNGtNL
 RVnPakDbAuW7G3VacbTeoWPcwyyAWthvVo</code></pre>
+
+<h3 id="activity">Observed wallet activity</h3>
+<p>Checked on November 2, 2026 with public block explorers. Amounts in USD are approximate, at the price on that day. Dates are as shown by the explorer.</p>
+
+<h4>Litecoin <code>MRwLeqhLJMqLoGjJcvza3Nk8ZkUHe28CYf</code></h4>
+<p><strong>Balance: 1.43814267 LTC (~$78 USD), never spent.</strong> Every incoming payment is still sitting in the address. Several of them look like victims who pasted an address the clipper had swapped, including withdrawals from exchanges (one large input split into many outputs).</p>
+<div class="table-wrap"><table>
+<tr><th>Date</th><th>Received (LTC)</th><th>Likely source</th><th>Transaction</th></tr>
+<tr><td>2026-10-10</td><td>0.00007791</td><td>Dust/spam (same tiny amount sent to dozens of addresses)</td><td><code>a05483873856342142b2fe5c239d28169a72ffc7e391aa607437c684713b0180</code></td></tr>
+<tr><td>2026-10-13</td><td>0.00885967</td><td>Personal wallet consolidating small inputs: probable victim</td><td><code>773ace43e8698f09cf823e91e5d93e4d7eaaddb670446baa308bfc504859b9bc</code></td></tr>
+<tr><td>2026-10-27</td><td>0.95386416</td><td>Batch withdrawal (exchange-like): probable victim</td><td><code>d29f95ab0e591bbc94bf29290eb0f8a1db9205790b7a30c86aa51ee1903d0384</code></td></tr>
+<tr><td>2026-10-29</td><td>0.24333093</td><td>Personal wallet: probable victim</td><td><code>ee806e43a3c46c6ec4869244b2fe80d099ae163d6a4a930d2a21569d37efe4e1</code></td></tr>
+<tr><td>2026-10-30</td><td>0.23201000</td><td>Service / exchange hot wallet: probable victim</td><td><code>e8dd242ddc98e272b463559aa0e2a49804d7cce94bbb4164ba6d8144b946858d</code></td></tr>
+</table></div>
+
+<h4>Litecoin <code>LPbLK6dGS4a8WrZsKaD2ZwUcSeomKpRT7y</code></h4>
+<p>Received <strong>0.07093353 LTC</strong> on 2026-10-18 from an exchange batch withdrawal (<code>a82ee9178912264c64b761dd8fc3d89813b5ed4aac3f0c416c28868c971ad515</code>). On 2026-10-19 the attacker spent it together with three inputs from another address and sent the total, <strong>0.91891440 LTC</strong>, to a single address (<code>1f630b9f4f8fe9a12250728d324927d9472fa019cead5e48ff2d36086df60972</code>).</p>
+
+<h4>Related addresses (not in the analyzed sample)</h4>
+<p>Spending several addresses in one transaction usually means one owner controls all of them (the <em>common-input-ownership</em> heuristic). That makes these two addresses <strong>likely attacker-controlled</strong>. This is a strong indication, not proof.</p>
+<div class="table-wrap"><table>
+<tr><th>Address</th><th>Role</th></tr>
+<tr><td><code>LaB1ndToPZkHHhnWyxXxw3AQu2RUudF6xB</code></td><td>Spent together with <code>LPbLK6…</code> on 2026-10-19 (0.42844884 + 0.42 + 0.00016904 LTC). Probably another clipper address, from a different build of the malware.</td></tr>
+<tr><td><code>ltc1qsm2lsverjq049xfjgf…gq3usacn</code></td><td>Destination of the consolidated 0.91891440 LTC. Possibly where stolen funds are collected. Full address in transaction <code>1f630b9f…df60972</code>.</td></tr>
+</table></div>
+
+<h4>Other wallets</h4>
+<ul>
+  <li><code>0x149F2BD8ea695f1aF16D7B641b0132D7ccE12CCf</code>: no transactions on Ethereum mainnet; the explorer shows a small balance (~$5) on another EVM chain.</li>
+  <li><code>TZ8Fswt2FG4EfLMW43SAkebfkGnheNGtNL</code> (Tron): never used.</li>
+</ul>
+<p>The campaign was active <strong>at least since October 10, 2026</strong>, weeks before the infection documented here.</p>
 
 <h2 id="check">Am I infected? Quick check</h2>
 <p>This script <strong>only reads</strong>; it doesn't change or delete anything. Open a normal PowerShell window (no administrator needed) and read it before running it. That's good practice with any command you find online, including this one.</p>
@@ -182,7 +216,7 @@ Get-ChildItem $env:LOCALAPPDATA -Directory -ErrorAction SilentlyContinue | ForEa
     Write-Host "[!] Fake extension in: $($_.FullName)" -ForegroundColor Red; $found = $true
   }
 }
-# 4. PowerShell Loader
+# 4. PowerShell loader
 Get-ChildItem $env:TEMP -Filter 'S*.ps1' -ErrorAction SilentlyContinue | Where-Object { (Get-Content $_.FullName -Raw) -match 'VirtualAlloc' } | ForEach-Object {
   Write-Host "[!] Suspicious script: $($_.FullName)" -ForegroundColor Red; $found = $true
 }
