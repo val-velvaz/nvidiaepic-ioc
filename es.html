@@ -32,6 +32,7 @@ main{max-width:860px;margin:0 auto;padding:32px 16px 64px}
 h1{font-size:1.9rem;line-height:1.25;margin:.2em 0 .3em}
 h2{font-size:1.35rem;margin:2.2em 0 .6em;padding-top:.4em;border-top:1px solid var(--line)}
 h3{font-size:1.05rem;margin:1.6em 0 .4em}
+h4{font-size:.98rem;margin:1.3em 0 .3em}
 p,li{max-width:72ch}
 a{color:var(--link)}
 .tag{display:inline-block;font-size:.78rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:.15em .6em;border-radius:99px}
@@ -74,6 +75,7 @@ Tu equipo probablemente está infectado. Desde <strong>otro dispositivo</strong>
   <li><a href="#resumen">Resumen</a></li>
   <li><a href="#cadena">Cómo llega</a></li>
   <li><a href="#iocs">Indicadores (IOCs)</a></li>
+  <li><a href="#actividad">Actividad en wallets</a></li>
   <li><a href="#revisar">¿Estoy infectado?</a></li>
   <li><a href="#limpieza">Limpieza</a></li>
   <li><a href="#cuentas">Cuentas y contraseñas</a></li>
@@ -144,7 +146,7 @@ Tu equipo probablemente está infectado. Desde <strong>otro dispositivo</strong>
 </table></div>
 
 <h3>Wallets del atacante (clipper)</h3>
-<p>Direcciones que aparecen <strong>en texto plano</strong> dentro de <code>NVIDIAEpic.py</code>. El script contiene muchas más, cifradas. Si alguna vez mandaste cripto a una de estas, fue el clipper.</p>
+<p>Direcciones que aparecen <strong>en texto plano</strong> dentro de <code>NVIDIAEpic.py</code>. El script contiene muchas más, cifradas. Si alguna vez mandaste cripto a una de estas, fue el clipper. Ver <a href="#actividad">actividad observada</a>.</p>
 <pre><code>bc1q0gm9tn3tw8g2y6dds5zdrp3hycemw33kfx5g25
 bc1qawxdqwkggqk2mdtet92vetq5t78rtzumzxzntg
 bc1qlv22c7fsu22wyuj0v8v5davchmn6cgvvn68a9l
@@ -161,6 +163,38 @@ MRwLeqhLJMqLoGjJcvza3Nk8ZkUHe28CYf
 0x149F2BD8ea695f1aF16D7B641b0132D7ccE12CCf
 TZ8Fswt2FG4EfLMW43SAkebfkGnheNGtNL
 RVnPakDbAuW7G3VacbTeoWPcwyyAWthvVo</code></pre>
+
+<h3 id="actividad">Actividad observada en las wallets</h3>
+<p>Revisado el 2 de noviembre de 2026 con exploradores públicos de blockchain. Los montos en USD son aproximados, al precio de ese día. Las fechas son las que muestra el explorador.</p>
+
+<h4>Litecoin <code>MRwLeqhLJMqLoGjJcvza3Nk8ZkUHe28CYf</code></h4>
+<p><strong>Saldo: 1.43814267 LTC (~$78 USD), nunca movido.</strong> Todos los pagos recibidos siguen en la dirección. Varios parecen de víctimas que pegaron una dirección cambiada por el clipper, incluidos retiros de exchanges (una entrada grande repartida en muchas salidas).</p>
+<div class="table-wrap"><table>
+<tr><th>Fecha</th><th>Recibido (LTC)</th><th>Origen probable</th><th>Transacción</th></tr>
+<tr><td>2026-10-10</td><td>0.00007791</td><td>Spam / dusting (la misma cantidad mínima a docenas de direcciones)</td><td><code>a05483873856342142b2fe5c239d28169a72ffc7e391aa607437c684713b0180</code></td></tr>
+<tr><td>2026-10-13</td><td>0.00885967</td><td>Wallet personal que junta entradas pequeñas: probable víctima</td><td><code>773ace43e8698f09cf823e91e5d93e4d7eaaddb670446baa308bfc504859b9bc</code></td></tr>
+<tr><td>2026-10-27</td><td>0.95386416</td><td>Retiro masivo (tipo exchange): probable víctima</td><td><code>d29f95ab0e591bbc94bf29290eb0f8a1db9205790b7a30c86aa51ee1903d0384</code></td></tr>
+<tr><td>2026-10-29</td><td>0.24333093</td><td>Wallet personal: probable víctima</td><td><code>ee806e43a3c46c6ec4869244b2fe80d099ae163d6a4a930d2a21569d37efe4e1</code></td></tr>
+<tr><td>2026-10-30</td><td>0.23201000</td><td>Wallet de un servicio o exchange: probable víctima</td><td><code>e8dd242ddc98e272b463559aa0e2a49804d7cce94bbb4164ba6d8144b946858d</code></td></tr>
+</table></div>
+
+<h4>Litecoin <code>LPbLK6dGS4a8WrZsKaD2ZwUcSeomKpRT7y</code></h4>
+<p>Recibió <strong>0.07093353 LTC</strong> el 2026-10-18 desde un retiro masivo de un exchange (<code>a82ee9178912264c64b761dd8fc3d89813b5ed4aac3f0c416c28868c971ad515</code>). El 2026-10-19 el atacante lo gastó junto con tres entradas de otra dirección y mandó el total, <strong>0.91891440 LTC</strong>, a una sola dirección (<code>1f630b9f4f8fe9a12250728d324927d9472fa019cead5e48ff2d36086df60972</code>).</p>
+
+<h4>Direcciones relacionadas (no vienen en la muestra analizada)</h4>
+<p>Gastar varias direcciones en una misma transacción casi siempre significa que las controla la misma persona (la heurística de <em>common-input-ownership</em>). Por eso estas dos direcciones <strong>probablemente son del atacante</strong>. Es un indicio fuerte, no una prueba.</p>
+<div class="table-wrap"><table>
+<tr><th>Dirección</th><th>Papel</th></tr>
+<tr><td><code>LaB1ndToPZkHHhnWyxXxw3AQu2RUudF6xB</code></td><td>Se gastó junto con <code>LPbLK6…</code> el 2026-10-19 (0.42844884 + 0.42 + 0.00016904 LTC). Probablemente otra dirección del clipper, de otra versión del malware.</td></tr>
+<tr><td><code>ltc1qsm2lsverjq049xfjgf…gq3usacn</code></td><td>Destino de los 0.91891440 LTC juntados. Posiblemente donde se acumula lo robado. Dirección completa en la transacción <code>1f630b9f…df60972</code>.</td></tr>
+</table></div>
+
+<h4>Otras wallets</h4>
+<ul>
+  <li><code>0x149F2BD8ea695f1aF16D7B641b0132D7ccE12CCf</code>: sin transacciones en Ethereum; el explorador muestra un saldo pequeño (~$5) en otra red EVM.</li>
+  <li><code>TZ8Fswt2FG4EfLMW43SAkebfkGnheNGtNL</code> (Tron): nunca se ha usado.</li>
+</ul>
+<p>La campaña estaba activa <strong>al menos desde el 10 de octubre de 2026</strong>, semanas antes de la infección documentada aquí.</p>
 
 <h2 id="revisar">¿Estoy infectado? Revisión rápida</h2>
 <p>Este script <strong>solo lee</strong>, no cambia ni borra nada. Ábrelo en PowerShell normal (no hace falta administrador) y léelo antes de correrlo; es buena práctica con cualquier comando que encuentres en internet, incluido este.</p>
