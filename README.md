@@ -6,9 +6,7 @@ Indicators of compromise (IOCs) and cleanup steps for a **ClickFix** infection (
 - A **malicious Edge extension** posing as *"Save to Google Drive"* by *"Google inc."*.
 - A PowerShell loader (`%TEMP%\S422.ps1`) that runs an encrypted payload in memory, most likely an infostealer.
 
-Full guide: `index.html` (English) · `es.html` (Español), or the published GitHub Pages site. See the website: <img width="2559" height="1599" alt="image" src="https://github.com/user-attachments/assets/bc64d28e-7fc0-45a2-a79f-d76122e583ed" /> 
-
-
+Full guide: `index.html` (English) · `es.html` (Español), or the published GitHub Pages site. See the website: https://val-velvaz.github.io/nvidiaepic-ioc/
 ## Hashes (SHA-256)
 
 | File | SHA-256 |
